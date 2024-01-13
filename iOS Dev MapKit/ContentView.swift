@@ -6,16 +6,29 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+    
+    @State private var restrooms: [Restroom] = []
+
+    private func loadData() async {
+        do {
+            restrooms = try await NetworkManager.shared.fetchData(at: AppConstants.API.restroomsAPiUrl)
+        } catch {
+            print(error.localizedDescription)
         }
-        .padding()
+    }
+    
+    var body: some View {
+        Map {
+            ForEach(restrooms) { restroom in
+                Marker(restroom.name, coordinate: restroom.coordinate)
+            }
+        }
+        .task {
+            await loadData()
+        }
     }
 }
 
